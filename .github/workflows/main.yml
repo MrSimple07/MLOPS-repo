@@ -1,0 +1,42 @@
+name: CI/CD Pipeline
+
+on:
+  push:
+    branches: [ "main" ]  # Пайплайн сработает при пуше в main
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    # Указываем working-directory для установки зависимостей
+     Dayan: Install dependencies
+      working-directory: ./CI_CD_FastApi
+      run: |
+        python -m pip install --upgrade pip
+        pip install -r requirements.txt
+
+    # Указываем working-directory для запуска тестов
+    - name: Run Unit Tests
+      working-directory: ./CI_CD_FastApi
+      run: |
+        pytest
+
+  build-and-push:
+    needs: test
+    runs-on: ubuntu-latest
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    # При сборке докера нам нужно передать контекст папки
+    - name: Build Docker Image
+      run: |
+        docker build -t pizza-quality-service:latest ./CI_CD_FastApi
